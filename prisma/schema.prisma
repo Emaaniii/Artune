@@ -1,0 +1,71 @@
+// Arting database schema.
+// Local dev uses SQLite (zero setup). Production target is Postgres on Neon —
+// swap `provider = "postgresql"` and re-run `prisma migrate dev` against your DATABASE_URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  phone        String    @unique
+  name         String?
+  username     String?   @unique
+  passwordHash String?
+  createdAt    DateTime  @default(now())
+  bookings     Booking[]
+}
+
+model Verification {
+  id        String   @id @default(cuid())
+  phone     String
+  codeHash  String
+  expiresAt DateTime
+  consumed  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([phone])
+}
+
+model ClassType {
+  id        String      @id @default(cuid())
+  slug      String      @unique
+  name      String
+  blurb     String
+  imageUrl  String
+  priceFils Int
+  slots     ClassSlot[]
+}
+
+model ClassSlot {
+  id          String    @id @default(cuid())
+  classTypeId String
+  classType   ClassType @relation(fields: [classTypeId], references: [id])
+  date        DateTime
+  startsAt    String
+  endsAt      String
+  maxSeats    Int       @default(10)
+  bookings    Booking[]
+
+  @@unique([classTypeId, date, startsAt])
+}
+
+model Booking {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id])
+  slotId     String
+  slot       ClassSlot @relation(fields: [slotId], references: [id])
+  status     String   @default("PENDING") // PENDING | PAID | CANCELLED
+  paymentRef String?
+  amountFils Int
+  createdAt  DateTime @default(now())
+  paidAt     DateTime?
+
+  @@index([userId])
+}

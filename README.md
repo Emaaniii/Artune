@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Arting
 
-## Getting Started
+A scalable Next.js 14 platform for booking art classes (oil painting, manga, miniature, sculpting) in Kuwait. Phone+OTP signup or username/password login, seat-capped booking, mock K-Net payment that can be swapped for a real merchant integration via env vars.
 
-First, run the development server:
+## Stack
+
+- **Next.js 14** App Router + TypeScript
+- **Tailwind CSS** with the violet/indigo galaxy theme
+- **Prisma** + **SQLite (local dev)** / **Postgres (production)**
+- **iron-session** (encrypted httpOnly cookie) + **bcryptjs**
+- **zod** + **react-hook-form** for validation
+
+## Quick start
 
 ```bash
+npm install
+cp .env.example .env
+npx prisma migrate dev --name init
+npm run db:seed
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Mocked services
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **OTP**: `lib/sms.ts` logs codes to the **server console**. Watch the terminal running `npm run dev`.
+- **K-Net**: `/payment/mock-knet/[id]` is a fake gateway page with **Pay** / **Cancel** buttons that hit a signed callback at `/api/payment/callback`.
 
-## Learn More
+## End-to-end test
 
-To learn more about Next.js, take a look at the following resources:
+1. Visit `/` → enter `60001234` → submit. The terminal will log a 6-digit code.
+2. Enter the code on `/verify-otp` → land on `/dashboard`. Set your name.
+3. Click **Book one** → pick a class → pick a timing → **Proceed to payment**.
+4. On the mock K-Net page, click **Pay**. You'll land on the confirmation page with status **PAID**.
+5. Return to `/dashboard` — the booking now appears in the list.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Going to production
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Swap the dev defaults with real services. Nothing else in the app changes:
 
-## Deploy on Vercel
+| Concern | Local default | Production swap |
+|---|---|---|
+| Database | SQLite (`file:./dev.db`) | Postgres on Neon: set `DATABASE_URL=postgresql://…` and change the `provider` in `prisma/schema.prisma` to `"postgresql"`. Re-run `prisma migrate dev`. |
+| Session secret | dummy string in `.env` | `openssl rand -hex 32` → `SESSION_SECRET=…` |
+| OTP/SMS | console log | Set `SMS_PROVIDER=twilio` + Twilio creds and add a `twilio` branch in `lib/sms.ts`. |
+| K-Net payment | `/payment/mock-knet/[id]` | Set `KNET_PROVIDER=live` + `KNET_MERCHANT_ID`/`TRANSPORTAL_PASSWORD`/etc., and replace `buildRedirectUrl` + `verifyCallback` in `lib/knet.ts` with the real K-Net hosted-page request and response signature verification. |
+| Hosting | local | Vercel: connect this repo, set the env vars above. Neon Postgres has a generous free tier. |
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project layout
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+arting/
+├── app/
+│   ├── layout.tsx           # fonts + galaxy bg + StarField
+│   ├── page.tsx             # landing (signup + login tabs)
+│   ├── verify-otp/          # OTP entry
+│   ├── (app)/               # protected route group (auth guard in layout)
+│   │   ├── dashboard/       # welcome + booked classes
+│   │   ├── booking/         # class picker + slot picker + confirmation
+│   │   └── payment/         # mock K-Net page
+│   └── api/                 # auth, bookings, payment routes
+├── components/              # UI components
+├── lib/                     # db, session, auth, otp, sms, knet, classes, bookings, validators, utils
+└── prisma/                  # schema + seed
+```
+
+## Things explicitly out of scope (for now)
+
+- Real K-Net merchant integration
+- Real SMS gateway
+- Admin UI for managing classes/slots (use `npx prisma studio`)
+- Calendar / month picker (we show the next available date)
+- Refunds, cancellations, rescheduling
+- i18n / Arabic translation
+- Email receipts
