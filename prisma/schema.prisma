@@ -1,14 +1,18 @@
-// Arting database schema.
-// Local dev uses SQLite (zero setup). Production target is Postgres on Neon —
-// swap `provider = "postgresql"` and re-run `prisma migrate dev` against your DATABASE_URL.
+// Artune database schema.
+// Production target: Postgres on Vercel Postgres or Neon.
+//   DATABASE_URL = pooled connection (used by the app at runtime).
+//   DIRECT_URL   = unpooled connection (used by `prisma migrate`).
+// On Vercel Postgres, point DIRECT_URL at POSTGRES_URL_NON_POOLING.
+// On Neon, copy the unpooled connection string from the Neon dashboard.
 
 generator client {
   provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
