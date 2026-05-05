@@ -9,7 +9,7 @@ export interface SessionData {
 
 export const sessionOptions: SessionOptions = {
   password: process.env.SESSION_SECRET ?? "dev-only-fallback-secret-min-32-chars-please-replace",
-  cookieName: process.env.SESSION_COOKIE_NAME ?? "arting_session",
+  cookieName: process.env.SESSION_COOKIE_NAME ?? "artune_session",
   cookieOptions: {
     httpOnly: true,
     sameSite: "lax",

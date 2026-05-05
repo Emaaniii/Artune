@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { CLASS_DISPLAY, isClassSlug } from "@/lib/classes";
-import { getNextSlotsForClass, seatsAvailable } from "@/lib/bookings";
+import { getUpcomingSlotsForClass } from "@/lib/bookings";
 import SlotPicker from "@/components/SlotPicker";
-import { formatDate, formatKwd } from "@/lib/utils";
+import { formatKwd } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 
@@ -14,21 +14,14 @@ export default async function ClassDetailPage({
   if (!isClassSlug(params.classType)) notFound();
 
   const display = CLASS_DISPLAY[params.classType];
-  const data = await getNextSlotsForClass(params.classType);
+  const data = await getUpcomingSlotsForClass(params.classType);
   if (!data) notFound();
 
-  const { classType, slots: rawSlots } = data;
-  const slots = await Promise.all(
-    rawSlots.map(async (s) => ({
-      id: s.id,
-      startsAt: s.startsAt,
-      endsAt: s.endsAt,
-      maxSeats: s.maxSeats,
-      seatsLeft: await seatsAvailable(s.id),
-    })),
-  );
-
-  const sessionDate = rawSlots[0]?.date ? new Date(rawSlots[0].date) : null;
+  const { classType, slotsByDate } = data;
+  const slotsByDateSerialized = slotsByDate.map((b) => ({
+    date: b.date.toISOString().slice(0, 10),
+    slots: b.slots,
+  }));
 
   return (
     <main className="mx-auto w-full max-w-container-max px-6 md:px-margin-desktop">
@@ -44,9 +37,14 @@ export default async function ClassDetailPage({
         {/* Left: artwork + essentials */}
         <div className="md:col-span-7 flex flex-col gap-8">
           <div className="star-glass relative overflow-hidden rounded-2xl aspect-video">
-            {/* Inline placeholder uses the same SVG family as the picker */}
-            <ClassPreview slug={params.classType} />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent pointer-events-none" />
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={display.imageUrl}
+              alt={classType.name}
+              className="absolute inset-0 h-full w-full object-cover"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-background/20 to-transparent pointer-events-none" />
           </div>
 
           <div className="star-glass rounded-2xl p-8 relative">
@@ -72,11 +70,9 @@ export default async function ClassDetailPage({
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h2 className="font-display text-h2 text-on-surface">Book your seat</h2>
-                {sessionDate && (
-                  <p className="text-sm text-on-surface-variant mt-1">
-                    {formatDate(sessionDate)}
-                  </p>
-                )}
+                <p className="text-sm text-on-surface-variant mt-1">
+                  Pick a date and timing that works for you.
+                </p>
               </div>
               <div className="text-right">
                 <p className="text-on-surface-variant text-xs font-label-caps">Price</p>
@@ -86,7 +82,7 @@ export default async function ClassDetailPage({
                 <p className="text-xs text-on-surface-variant">per student</p>
               </div>
             </div>
-            <SlotPicker slots={slots} priceFils={classType.priceFils} />
+            <SlotPicker slotsByDate={slotsByDateSerialized} priceFils={classType.priceFils} />
           </div>
         </aside>
       </div>
@@ -108,36 +104,3 @@ function Essential({ title, children }: { title: string; children: React.ReactNo
   );
 }
 
-function ClassPreview({ slug }: { slug: string }) {
-  // Re-use the same SVGs from the picker by lazy-importing.
-  // Inline tiny copy here to keep the server component clean.
-  const palette: Record<string, [string, string]> = {
-    "oil-painting": ["#1e3a8a", "#fbbf24"],
-    manga: ["#312e81", "#fbcfe8"],
-    miniature: ["#0f766e", "#fde68a"],
-    sculpting: ["#1e293b", "#e5e7eb"],
-  };
-  const [a, b] = palette[slug] ?? ["#312e81", "#d0bcff"];
-  return (
-    <svg viewBox="0 0 800 450" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
-      <defs>
-        <linearGradient id={`prev-${slug}`} x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stopColor={a} />
-          <stop offset="1" stopColor="#0b1326" />
-        </linearGradient>
-      </defs>
-      <rect width="800" height="450" fill={`url(#prev-${slug})`} />
-      {[...Array(40)].map((_, i) => (
-        <circle
-          key={i}
-          cx={(i * 53) % 800}
-          cy={(i * 97) % 450}
-          r={(i % 3) + 1}
-          fill="white"
-          opacity={0.4 + ((i % 5) / 10)}
-        />
-      ))}
-      <circle cx="600" cy="120" r="60" fill={b} opacity="0.85" />
-    </svg>
-  );
-}

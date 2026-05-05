@@ -1,3 +1,4 @@
+import type { CSSProperties } from "react";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -5,6 +6,83 @@ interface Props {
   showWordmark?: boolean;
   className?: string;
 }
+
+/** Tiny 4-point sparkle star that traces an elliptical orbit. */
+export function OrbitingStar({
+  rx,
+  ry,
+  duration = "7s",
+  size = 14,
+}: {
+  rx: string;
+  ry: string;
+  duration?: string;
+  size?: number;
+}) {
+  const half = size / 2;
+  return (
+    <span
+      aria-hidden="true"
+      className="orbit-star pointer-events-none absolute top-1/2 left-1/2"
+      style={
+        {
+          "--orbit-rx": rx,
+          "--orbit-ry": ry,
+          "--orbit-duration": duration,
+          marginTop: `-${half}px`,
+          marginLeft: `-${half}px`,
+          width: `${size}px`,
+          height: `${size}px`,
+        } as CSSProperties
+      }
+    >
+      <svg
+        viewBox="0 0 24 24"
+        width={size}
+        height={size}
+        className="drop-shadow-[0_0_8px_rgba(255,255,255,0.95)]"
+      >
+        <path
+          d="M 12 1 L 13.6 9.4 L 22 12 L 13.6 14.6 L 12 23 L 10.4 14.6 L 2 12 L 10.4 9.4 Z"
+          fill="#ffffff"
+        />
+      </svg>
+    </span>
+  );
+}
+
+/**
+ * Each letter of "Artune" maps to a paint-blob color on the planet.
+ * The same colors drive the wordmark, so the link reads visually.
+ */
+const LETTER_COLORS: ReadonlyArray<{ letter: string; color: string }> = [
+  { letter: "A", color: "#ef4444" }, // red
+  { letter: "r", color: "#f97316" }, // orange
+  { letter: "t", color: "#fbbf24" }, // gold
+  { letter: "u", color: "#10b981" }, // emerald
+  { letter: "n", color: "#3b82f6" }, // cobalt
+  { letter: "e", color: "#a78bfa" }, // violet
+];
+
+// Six clock positions, evenly spaced around a 11px-radius circle from (32, 32).
+// Order matches LETTER_COLORS so dot-i is letter-i's paint blob.
+const BLOB_POSITIONS: ReadonlyArray<{ cx: number; cy: number }> = [
+  { cx: 32, cy: 21 }, // 12 o'clock — A
+  { cx: 41.5, cy: 26.5 }, // 2 o'clock — r
+  { cx: 41.5, cy: 37.5 }, // 4 o'clock — t
+  { cx: 32, cy: 43 }, // 6 o'clock — u
+  { cx: 22.5, cy: 37.5 }, // 8 o'clock — n
+  { cx: 22.5, cy: 26.5 }, // 10 o'clock — e
+];
+
+// Saturn-ring endpoints for an ellipse cx=32, cy=34, rx=29, ry=5, rotated -18°
+const RING = {
+  cyOffset: 34,
+  leftX: 4.42,
+  leftY: 42.96,
+  rightX: 59.58,
+  rightY: 25.04,
+};
 
 export default function Logo({ size = 48, showWordmark = true, className }: Props) {
   return (
@@ -15,64 +93,113 @@ export default function Logo({ size = 48, showWordmark = true, className }: Prop
         viewBox="0 0 64 64"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
-        aria-label="Arting logo"
+        aria-label="Artune logo"
         role="img"
       >
         <defs>
-          <linearGradient id="logo-grad" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stopColor="#d0bcff" />
-            <stop offset="1" stopColor="#6d3bd7" />
-          </linearGradient>
-          <radialGradient id="logo-glow" cx="32" cy="32" r="30" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stopColor="#a078ff" stopOpacity="0.5" />
-            <stop offset="1" stopColor="#a078ff" stopOpacity="0" />
+          <radialGradient id="artune-halo" cx="32" cy="32" r="30" gradientUnits="userSpaceOnUse">
+            <stop offset="0" stopColor="#c3a8ff" stopOpacity="0.45" />
+            <stop offset="0.55" stopColor="#7c3aed" stopOpacity="0.18" />
+            <stop offset="1" stopColor="#7c3aed" stopOpacity="0" />
           </radialGradient>
+          <radialGradient id="artune-planet" cx="0.32" cy="0.3" r="0.85">
+            <stop offset="0" stopColor="#475569" />
+            <stop offset="0.45" stopColor="#1e293b" />
+            <stop offset="1" stopColor="#0a0e1a" />
+          </radialGradient>
+          <linearGradient id="artune-ring" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#c4b5fd" stopOpacity="0" />
+            <stop offset="0.25" stopColor="#c4b5fd" stopOpacity="0.85" />
+            <stop offset="0.75" stopColor="#a78bfa" stopOpacity="0.85" />
+            <stop offset="1" stopColor="#a78bfa" stopOpacity="0" />
+          </linearGradient>
         </defs>
 
-        {/* Soft glow */}
-        <circle cx="32" cy="32" r="28" fill="url(#logo-glow)" />
+        {/* Soft glow halo */}
+        <circle cx="32" cy="32" r="30" fill="url(#artune-halo)" />
 
-        {/* Palette body */}
+        {/* Saturn ring — back half (the arc behind the planet) */}
         <path
-          d="M32 8c-13 0-24 9.5-24 22 0 7 6 12 13 12 3 0 5-1.5 5-4 0-1.5-1-2.5-1-4 0-2.5 2-4 4.5-4H38c10 0 18-7 18-15 0-4-3-7-10-7Z"
-          fill="url(#logo-grad)"
-          opacity="0.95"
+          d={`M ${RING.leftX} ${RING.leftY} A 29 5 -18 0 1 ${RING.rightX} ${RING.rightY}`}
+          stroke="url(#artune-ring)"
+          strokeWidth="1.6"
+          fill="none"
+          strokeLinecap="round"
         />
 
-        {/* Palette dots (paint blobs) */}
-        <circle cx="20" cy="26" r="2.4" fill="#0b1326" />
-        <circle cx="28" cy="20" r="2.4" fill="#0b1326" />
-        <circle cx="38" cy="20" r="2.4" fill="#0b1326" />
-        <circle cx="46" cy="26" r="2.4" fill="#0b1326" />
+        {/* Planet body (palette base) */}
+        <circle
+          cx="32"
+          cy="32"
+          r="20"
+          fill="url(#artune-planet)"
+          stroke="#ffffff"
+          strokeOpacity="0.22"
+          strokeWidth="0.5"
+        />
 
-        {/* Brush handle (diagonal) */}
-        <rect
-          x="36"
-          y="36"
-          width="4.5"
-          height="22"
-          rx="1.5"
-          transform="rotate(-30 36 36)"
-          fill="#e9ddff"
-        />
-        {/* Brush ferrule */}
-        <rect
-          x="33.5"
-          y="34"
-          width="6"
-          height="4"
-          transform="rotate(-30 33.5 34)"
-          fill="#958ea0"
-        />
-        {/* Brush bristles */}
+        {/* Subtle terminator highlight (light from upper-left) */}
         <path
-          d="M30.6 31 L36.5 28 L37.6 32 L31.7 35 Z"
-          fill="#c3c0ff"
+          d="M 15 25 A 19 19 0 0 1 32 13"
+          stroke="#ffffff"
+          strokeOpacity="0.18"
+          strokeWidth="1"
+          fill="none"
+          strokeLinecap="round"
+        />
+
+        {/* Six paint blobs — one per letter of Artune */}
+        {LETTER_COLORS.map((c, i) => (
+          <circle
+            key={c.letter + i}
+            cx={BLOB_POSITIONS[i].cx}
+            cy={BLOB_POSITIONS[i].cy}
+            r="3.5"
+            fill={c.color}
+            stroke="#0a0e1a"
+            strokeOpacity="0.5"
+            strokeWidth="0.5"
+          />
+        ))}
+
+        {/* Tiny shine highlight on each paint blob */}
+        {BLOB_POSITIONS.map((p, i) => (
+          <circle
+            key={`shine-${i}`}
+            cx={p.cx - 1}
+            cy={p.cy - 1}
+            r="0.85"
+            fill="#ffffff"
+            opacity="0.7"
+          />
+        ))}
+
+        {/* Saturn ring — front half (the arc in front of the planet) */}
+        <path
+          d={`M ${RING.leftX} ${RING.leftY} A 29 5 -18 0 0 ${RING.rightX} ${RING.rightY}`}
+          stroke="url(#artune-ring)"
+          strokeWidth="1.6"
+          fill="none"
+          strokeLinecap="round"
         />
       </svg>
+
       {showWordmark && (
-        <span className="font-display text-2xl font-bold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-violet-300 to-indigo-300">
-          Arting
+        <span className="relative inline-block">
+          <span className="font-display text-2xl font-bold tracking-[0.18em]">
+            {LETTER_COLORS.map((c, i) => (
+              <span
+                key={c.letter + i}
+                style={{
+                  color: c.color,
+                  textShadow: `0 0 12px ${c.color}66`,
+                }}
+              >
+                {c.letter}
+              </span>
+            ))}
+          </span>
+          <OrbitingStar rx="68px" ry="14px" duration="7s" size={12} />
         </span>
       )}
     </div>

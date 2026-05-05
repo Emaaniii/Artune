@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import Logo from "@/components/Logo";
+import Logo, { OrbitingStar } from "@/components/Logo";
 import AuthTabs from "@/components/AuthTabs";
 import { getCurrentUser } from "@/lib/auth";
 
@@ -14,7 +14,15 @@ export default async function LandingPage() {
           {/* Branding */}
           <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-6 px-4">
             <Logo size={96} showWordmark={false} className="mb-2" />
-            <h1 className="font-display text-h1 text-primary tracking-tight">Arting</h1>
+            <h1 className="relative inline-block font-display text-h1 tracking-[0.18em] font-bold">
+              <span style={{ color: "#ef4444", textShadow: "0 0 20px #ef444466" }}>A</span>
+              <span style={{ color: "#f97316", textShadow: "0 0 20px #f9731666" }}>r</span>
+              <span style={{ color: "#fbbf24", textShadow: "0 0 20px #fbbf2466" }}>t</span>
+              <span style={{ color: "#10b981", textShadow: "0 0 20px #10b98166" }}>u</span>
+              <span style={{ color: "#3b82f6", textShadow: "0 0 20px #3b82f666" }}>n</span>
+              <span style={{ color: "#a78bfa", textShadow: "0 0 20px #a78bfa66" }}>e</span>
+              <OrbitingStar rx="170px" ry="34px" duration="9s" size={20} />
+            </h1>
             <p className="font-body-lg text-on-surface-variant max-w-md leading-relaxed">
               Embark on a creative voyage through the nebula of imagination. Discover, learn, and master the arts in a space designed for visionaries.
             </p>
@@ -42,7 +50,7 @@ export default async function LandingPage() {
 
       <footer className="relative z-10 w-full border-t border-white/5 bg-slate-950/20 px-6 py-6 backdrop-blur-sm flex flex-col md:flex-row items-center justify-between gap-2">
         <span className="font-display text-sm text-slate-500">
-          © Arting · Journey through the nebula of art
+          © Artune · Journey through the nebula of art
         </span>
         <span className="font-display text-sm text-slate-500">Made with ✦ in Kuwait</span>
       </footer>

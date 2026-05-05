@@ -17,7 +17,7 @@ export async function issueOtp(phone: string): Promise<{ code: string }> {
     data: { phone, codeHash, expiresAt, consumed: false },
   });
 
-  await sendSms(phone, `Your Arting verification code is ${code}. Expires in ${TTL_MIN} minutes.`);
+  await sendSms(phone, `Your Artune verification code is ${code}. Expires in ${TTL_MIN} minutes.`);
   return { code };
 }
 

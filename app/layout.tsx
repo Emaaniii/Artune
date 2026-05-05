@@ -16,7 +16,7 @@ const body = Be_Vietnam_Pro({
 });
 
 export const metadata: Metadata = {
-  title: "Arting — Journey Through Art",
+  title: "Artune — Journey Through Art",
   description:
     "Book oil painting, manga drawing, miniature designing and sculpting classes in Kuwait.",
 };

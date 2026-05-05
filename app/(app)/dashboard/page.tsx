@@ -15,7 +15,14 @@ export default async function DashboardPage() {
     return (
       <main className="mx-auto w-full max-w-container-max px-6 md:px-margin-desktop">
         <h1 className="font-display text-h1 text-on-surface mb-4">
-          Welcome to <span className="text-primary">Arting</span>
+          Welcome to <span className="font-bold tracking-[0.15em]">
+            <span style={{ color: "#ef4444" }}>A</span>
+            <span style={{ color: "#f97316" }}>r</span>
+            <span style={{ color: "#fbbf24" }}>t</span>
+            <span style={{ color: "#10b981" }}>u</span>
+            <span style={{ color: "#3b82f6" }}>n</span>
+            <span style={{ color: "#a78bfa" }}>e</span>
+          </span>
         </h1>
         <p className="font-body-lg text-on-surface-variant mb-8">
           Tell us your name so we can greet you properly.

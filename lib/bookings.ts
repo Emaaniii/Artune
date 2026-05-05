@@ -48,6 +48,56 @@ export async function getNextSlotsForClass(classSlug: string) {
   return { classType: ct, slots: sameDay };
 }
 
+export async function getUpcomingSlotsForClass(classSlug: string, daysAhead = 14) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const until = new Date(today);
+  until.setDate(today.getDate() + daysAhead);
+
+  const ct = await prisma.classType.findUnique({ where: { slug: classSlug } });
+  if (!ct) return null;
+
+  const slots = await prisma.classSlot.findMany({
+    where: { classTypeId: ct.id, date: { gte: today, lt: until } },
+    orderBy: [{ date: "asc" }, { startsAt: "asc" }],
+    include: { _count: { select: { bookings: { where: { status: { in: ACTIVE } } } } } },
+  });
+
+  const buckets = new Map<
+    string,
+    {
+      date: Date;
+      slots: Array<{
+        id: string;
+        startsAt: string;
+        endsAt: string;
+        maxSeats: number;
+        seatsLeft: number;
+      }>;
+    }
+  >();
+
+  for (const s of slots) {
+    const key = s.date.toISOString().slice(0, 10);
+    const seatsLeft = Math.max(0, s.maxSeats - s._count.bookings);
+    const entry = buckets.get(key) ?? { date: s.date, slots: [] };
+    entry.slots.push({
+      id: s.id,
+      startsAt: s.startsAt,
+      endsAt: s.endsAt,
+      maxSeats: s.maxSeats,
+      seatsLeft,
+    });
+    buckets.set(key, entry);
+  }
+
+  const slotsByDate = Array.from(buckets.values()).sort(
+    (a, b) => a.date.getTime() - b.date.getTime(),
+  );
+
+  return { classType: ct, slotsByDate };
+}
+
 export async function createPendingBooking(userId: string, slotId: string) {
   return prisma.$transaction(async (tx) => {
     const slot = await tx.classSlot.findUnique({

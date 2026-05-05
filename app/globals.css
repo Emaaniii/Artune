@@ -55,6 +55,414 @@ body {
     background-image: linear-gradient(to right, #a078ff, #3e3c8f);
     box-shadow: 0 0 25px rgba(139, 92, 246, 0.5);
   }
+
+  /* ---------- Shinier twinkling stars ---------- */
+  @keyframes star-twinkle {
+    0%,
+    100% {
+      opacity: 0.4;
+      transform: scale(1);
+      filter: brightness(1);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.7);
+      filter: brightness(1.5);
+    }
+  }
+
+  .star-shiny {
+    animation: star-twinkle 4s ease-in-out infinite;
+    box-shadow:
+      0 0 4px rgba(255, 255, 255, 0.95),
+      0 0 9px rgba(208, 188, 255, 0.7),
+      0 0 18px rgba(139, 92, 246, 0.4);
+  }
+
+  .star-shiny-bright {
+    box-shadow:
+      0 0 6px rgba(255, 255, 255, 1),
+      0 0 14px rgba(208, 188, 255, 0.85),
+      0 0 28px rgba(139, 92, 246, 0.5),
+      0 0 52px rgba(195, 192, 255, 0.25);
+  }
+
+  /* Four-pointed sparkle cross for the brightest stars */
+  .star-sparkle::before,
+  .star-sparkle::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    pointer-events: none;
+    transform-origin: center;
+    opacity: 0.85;
+  }
+  .star-sparkle::before {
+    width: 1px;
+    height: 16px;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(
+      180deg,
+      transparent,
+      rgba(255, 255, 255, 0.9),
+      transparent
+    );
+  }
+  .star-sparkle::after {
+    width: 16px;
+    height: 1px;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.9),
+      transparent
+    );
+  }
+
+  /* ---------- Beautiful shooting stars ---------- */
+  @keyframes shoot-1 {
+    0% {
+      transform: translate3d(-20vw, 0, 0);
+      opacity: 0;
+    }
+    8% {
+      opacity: 1;
+    }
+    92% {
+      opacity: 1;
+    }
+    100% {
+      transform: translate3d(120vw, 0, 0);
+      opacity: 0;
+    }
+  }
+  @keyframes shoot-2 {
+    0% {
+      transform: translate3d(-25vw, 0, 0);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    88% {
+      opacity: 1;
+    }
+    100% {
+      transform: translate3d(125vw, 0, 0);
+      opacity: 0;
+    }
+  }
+
+  .shooting-trail {
+    position: relative;
+    height: 1.5px;
+    border-radius: 999px;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(195, 192, 255, 0) 4%,
+      rgba(195, 192, 255, 0.3) 30%,
+      rgba(208, 188, 255, 0.75) 65%,
+      rgba(255, 255, 255, 0.95) 92%,
+      #ffffff 100%
+    );
+    box-shadow:
+      0 0 6px rgba(208, 188, 255, 0.75),
+      0 0 14px rgba(139, 92, 246, 0.45),
+      0 0 28px rgba(99, 102, 241, 0.25);
+  }
+
+  /* Bright pulsing comet head at the leading edge */
+  .shooting-trail::after {
+    content: "";
+    position: absolute;
+    right: -2px;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    transform: translateY(-50%);
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow:
+      0 0 6px rgba(255, 255, 255, 1),
+      0 0 14px rgba(208, 188, 255, 0.95),
+      0 0 30px rgba(139, 92, 246, 0.65),
+      0 0 50px rgba(99, 102, 241, 0.35);
+    animation: comet-head-pulse 1.8s ease-in-out infinite;
+  }
+
+  /* 4-point cross flare riding the comet head — gives the sparkle */
+  .shooting-trail::before {
+    content: "";
+    position: absolute;
+    right: -11px;
+    top: 50%;
+    width: 26px;
+    height: 26px;
+    transform: translate(0, -50%) rotate(0deg);
+    background:
+      linear-gradient(
+        to right,
+        transparent 0%,
+        transparent 47%,
+        rgba(255, 255, 255, 0.95) 50%,
+        transparent 53%,
+        transparent 100%
+      ),
+      linear-gradient(
+        to bottom,
+        transparent 0%,
+        transparent 47%,
+        rgba(255, 255, 255, 0.95) 50%,
+        transparent 53%,
+        transparent 100%
+      );
+    -webkit-mask: radial-gradient(circle, #000 8%, transparent 65%);
+    mask: radial-gradient(circle, #000 8%, transparent 65%);
+    pointer-events: none;
+    animation: comet-sparkle 1.8s ease-in-out infinite;
+    z-index: 1;
+  }
+
+  @keyframes comet-head-pulse {
+    0%,
+    100% {
+      transform: translateY(-50%) scale(1);
+      box-shadow:
+        0 0 6px rgba(255, 255, 255, 1),
+        0 0 14px rgba(208, 188, 255, 0.95),
+        0 0 30px rgba(139, 92, 246, 0.65),
+        0 0 50px rgba(99, 102, 241, 0.35);
+    }
+    50% {
+      transform: translateY(-50%) scale(1.55);
+      box-shadow:
+        0 0 10px rgba(255, 255, 255, 1),
+        0 0 24px rgba(208, 188, 255, 1),
+        0 0 52px rgba(139, 92, 246, 0.9),
+        0 0 90px rgba(99, 102, 241, 0.55);
+    }
+  }
+
+  @keyframes comet-sparkle {
+    0%,
+    100% {
+      transform: translate(0, -50%) scale(0.7) rotate(0deg);
+      opacity: 0.45;
+    }
+    50% {
+      transform: translate(0, -50%) scale(1.45) rotate(45deg);
+      opacity: 1;
+    }
+  }
+
+  /* Pink/warm variant for one of the shooting stars */
+  .shooting-trail-warm {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(253, 230, 138, 0) 4%,
+      rgba(253, 230, 138, 0.25) 30%,
+      rgba(251, 207, 232, 0.7) 65%,
+      rgba(255, 255, 255, 0.95) 92%,
+      #ffffff 100%
+    );
+    box-shadow:
+      0 0 6px rgba(253, 230, 138, 0.7),
+      0 0 14px rgba(251, 207, 232, 0.5),
+      0 0 28px rgba(244, 114, 182, 0.25);
+  }
+  .shooting-trail-warm::after {
+    animation: comet-head-pulse-warm 1.8s ease-in-out infinite;
+  }
+
+  @keyframes comet-head-pulse-warm {
+    0%,
+    100% {
+      transform: translateY(-50%) scale(1);
+      box-shadow:
+        0 0 6px rgba(255, 255, 255, 1),
+        0 0 14px rgba(253, 230, 138, 0.9),
+        0 0 30px rgba(251, 207, 232, 0.6),
+        0 0 50px rgba(244, 114, 182, 0.3);
+    }
+    50% {
+      transform: translateY(-50%) scale(1.55);
+      box-shadow:
+        0 0 10px rgba(255, 255, 255, 1),
+        0 0 24px rgba(253, 230, 138, 1),
+        0 0 52px rgba(251, 207, 232, 0.85),
+        0 0 90px rgba(244, 114, 182, 0.55);
+    }
+  }
+}
+
+@layer utilities {
+  /* ---------- Floating decoration around the heading ---------- */
+  @keyframes float-a {
+    0%,
+    100% {
+      transform: translateY(0) rotate(-4deg);
+    }
+    50% {
+      transform: translateY(-14px) rotate(4deg);
+    }
+  }
+  @keyframes float-b {
+    0%,
+    100% {
+      transform: translateY(-4px) rotate(3deg);
+    }
+    50% {
+      transform: translateY(-18px) rotate(-3deg);
+    }
+  }
+  @keyframes float-c {
+    0%,
+    100% {
+      transform: translateY(0) rotate(2deg);
+    }
+    50% {
+      transform: translateY(-12px) rotate(-5deg);
+    }
+  }
+  @keyframes float-d {
+    0%,
+    100% {
+      transform: translateY(-2px) rotate(-2deg);
+    }
+    50% {
+      transform: translateY(-16px) rotate(6deg);
+    }
+  }
+
+  .float-a {
+    animation: float-a 5.5s ease-in-out infinite;
+  }
+  .float-b {
+    animation: float-b 6.5s ease-in-out infinite;
+  }
+  .float-c {
+    animation: float-c 7.5s ease-in-out infinite;
+  }
+  .float-d {
+    animation: float-d 8.5s ease-in-out infinite;
+  }
+
+  /* ---------- Star orbiting around the Artune wordmark ---------- */
+  /* 16-step ellipse approximation; rx/ry come from CSS custom props
+     so each call site can size its own orbit. */
+  @keyframes orbit {
+    0% {
+      transform: translate(var(--orbit-rx, 80px), 0);
+    }
+    6.25% {
+      transform: translate(
+        calc(var(--orbit-rx, 80px) * 0.924),
+        calc(var(--orbit-ry, 18px) * 0.383)
+      );
+    }
+    12.5% {
+      transform: translate(
+        calc(var(--orbit-rx, 80px) * 0.707),
+        calc(var(--orbit-ry, 18px) * 0.707)
+      );
+    }
+    18.75% {
+      transform: translate(
+        calc(var(--orbit-rx, 80px) * 0.383),
+        calc(var(--orbit-ry, 18px) * 0.924)
+      );
+    }
+    25% {
+      transform: translate(0, var(--orbit-ry, 18px));
+    }
+    31.25% {
+      transform: translate(
+        calc(var(--orbit-rx, 80px) * -0.383),
+        calc(var(--orbit-ry, 18px) * 0.924)
+      );
+    }
+    37.5% {
+      transform: translate(
+        calc(var(--orbit-rx, 80px) * -0.707),
+        calc(var(--orbit-ry, 18px) * 0.707)
+      );
+    }
+    43.75% {
+      transform: translate(
+        calc(var(--orbit-rx, 80px) * -0.924),
+        calc(var(--orbit-ry, 18px) * 0.383)
+      );
+    }
+    50% {
+      transform: translate(calc(var(--orbit-rx, 80px) * -1), 0);
+    }
+    56.25% {
+      transform: translate(
+        calc(var(--orbit-rx, 80px) * -0.924),
+        calc(var(--orbit-ry, 18px) * -0.383)
+      );
+    }
+    62.5% {
+      transform: translate(
+        calc(var(--orbit-rx, 80px) * -0.707),
+        calc(var(--orbit-ry, 18px) * -0.707)
+      );
+    }
+    68.75% {
+      transform: translate(
+        calc(var(--orbit-rx, 80px) * -0.383),
+        calc(var(--orbit-ry, 18px) * -0.924)
+      );
+    }
+    75% {
+      transform: translate(0, calc(var(--orbit-ry, 18px) * -1));
+    }
+    81.25% {
+      transform: translate(
+        calc(var(--orbit-rx, 80px) * 0.383),
+        calc(var(--orbit-ry, 18px) * -0.924)
+      );
+    }
+    87.5% {
+      transform: translate(
+        calc(var(--orbit-rx, 80px) * 0.707),
+        calc(var(--orbit-ry, 18px) * -0.707)
+      );
+    }
+    93.75% {
+      transform: translate(
+        calc(var(--orbit-rx, 80px) * 0.924),
+        calc(var(--orbit-ry, 18px) * -0.383)
+      );
+    }
+    100% {
+      transform: translate(var(--orbit-rx, 80px), 0);
+    }
+  }
+
+  /* Subtle twinkle while orbiting — synchronised pulse */
+  @keyframes orbit-twinkle {
+    0%,
+    100% {
+      opacity: 0.85;
+      filter: brightness(1);
+    }
+    50% {
+      opacity: 1;
+      filter: brightness(1.6);
+    }
+  }
+
+  .orbit-star {
+    animation: orbit var(--orbit-duration, 7s) linear infinite;
+  }
+  .orbit-star > svg {
+    animation: orbit-twinkle 1.4s ease-in-out infinite;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

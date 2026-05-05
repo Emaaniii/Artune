@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { requireUser } from "@/lib/auth";
 import { getBookingForUser } from "@/lib/bookings";
 import { formatDate, formatKwd, formatTime } from "@/lib/utils";
+import CancelBookingButton from "@/components/CancelBookingButton";
 
 export const dynamic = "force-dynamic";
 
@@ -22,6 +23,7 @@ export default async function ConfirmationPage({
   if (!b) notFound();
 
   const isPaid = b.status === "PAID";
+  const canCancel = b.status === "PENDING" || b.status === "PAID";
 
   return (
     <main className="mx-auto w-full max-w-2xl px-6 py-12">
@@ -67,13 +69,14 @@ export default async function ConfirmationPage({
           </ul>
         </div>
 
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Link
             href="/dashboard"
             className="flex-1 rounded-xl border border-white/15 px-4 py-3 text-center font-display font-semibold text-on-surface hover:bg-white/5 transition-all"
           >
             Back to dashboard
           </Link>
+          {canCancel && <CancelBookingButton bookingId={b.id} />}
           <Link
             href="/booking"
             className="gradient-button flex-1 rounded-xl px-4 py-3 text-center font-display font-bold text-white"
