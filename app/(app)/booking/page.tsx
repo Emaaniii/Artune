@@ -115,7 +115,6 @@ function Paintbrush({ variant }: { variant: "a" | "b" }) {
 
   // Outline / ink colors
   const ink = "#0a0e1a";
-  const inkSoft = "#1f2937";
 
   // Dark glossy wood handle
   const handle = "#5a3a1f";
