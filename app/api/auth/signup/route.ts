@@ -5,6 +5,19 @@ import { issueOtp } from "@/lib/otp";
 import { SignupInput } from "@/lib/validators";
 
 export async function POST(req: Request) {
+  try {
+    return await handleSignup(req);
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Unknown error";
+    console.error("[signup]", msg);
+    return NextResponse.json(
+      { error: msg, hint: "Check /api/health for missing env vars." },
+      { status: 500 },
+    );
+  }
+}
+
+async function handleSignup(req: Request) {
   let body: unknown;
   try {
     body = await req.json();
@@ -30,7 +43,10 @@ export async function POST(req: Request) {
     .eq("phone", phone)
     .maybeSingle();
   if (lookupErr) {
-    return NextResponse.json({ error: "Lookup failed" }, { status: 500 });
+    return NextResponse.json(
+      { error: `Lookup failed: ${lookupErr.message}` },
+      { status: 500 },
+    );
   }
 
   if (!existing) {
