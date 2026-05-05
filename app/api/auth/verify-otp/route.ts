@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 import { verifyOtp } from "@/lib/otp";
-import { setSessionUser } from "@/lib/auth";
+import { mintSessionForUser } from "@/lib/auth";
 import { VerifyOtpInput } from "@/lib/validators";
 
 export async function POST(req: Request) {
@@ -29,11 +29,24 @@ export async function POST(req: Request) {
     );
   }
 
-  const user = await prisma.user.findUnique({ where: { phone } });
-  if (!user) {
+  const admin = getSupabaseAdmin();
+  const { data: profile, error } = await admin
+    .from("profiles")
+    .select("id, name")
+    .eq("phone", phone)
+    .maybeSingle();
+  if (error || !profile) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
 
-  await setSessionUser(user.id, user.phone);
-  return NextResponse.json({ ok: true, needsName: !user.name });
+  try {
+    await mintSessionForUser(profile.id);
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Sign-in failed" },
+      { status: 500 },
+    );
+  }
+
+  return NextResponse.json({ ok: true, needsName: !profile.name });
 }

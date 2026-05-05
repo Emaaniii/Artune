@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { getSupabaseServer } from "@/lib/supabase/server";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 const ProfileInput = z.object({
   name: z.string().trim().min(2, "Name must be at least 2 characters").max(60),
@@ -40,9 +41,17 @@ export async function POST(req: Request) {
   }
 
   const { name, username, password } = parsed.data;
+  const supabase = getSupabaseServer();
 
   if (username && username !== user.username) {
-    const taken = await prisma.user.findUnique({ where: { username } });
+    // Username uniqueness must be checked across *all* profiles, but RLS lets
+    // a user only see their own row — so use the admin client for the check.
+    const admin = getSupabaseAdmin();
+    const { data: taken } = await admin
+      .from("profiles")
+      .select("id")
+      .eq("username", username)
+      .maybeSingle();
     if (taken && taken.id !== user.id) {
       return NextResponse.json(
         { error: "Username already taken" },
@@ -51,19 +60,14 @@ export async function POST(req: Request) {
     }
   }
 
-  const data: {
-    name: string;
-    username?: string;
-    passwordHash?: string;
-  } = { name };
+  const update: { name: string; username?: string; password_hash?: string } = { name };
+  if (username) update.username = username;
+  if (password) update.password_hash = await bcrypt.hash(password, 10);
 
-  if (username) data.username = username;
-  if (password) data.passwordHash = await bcrypt.hash(password, 10);
-
-  await prisma.user.update({
-    where: { id: user.id },
-    data,
-  });
+  const { error } = await supabase.from("profiles").update(update).eq("id", user.id);
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
 
   return NextResponse.json({ ok: true });
 }

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { getSupabaseServer } from "@/lib/supabase/server";
 import { NameInput } from "@/lib/validators";
 
 export async function POST(req: Request) {
@@ -20,9 +20,13 @@ export async function POST(req: Request) {
     );
   }
 
-  await prisma.user.update({
-    where: { id: user.id },
-    data: { name: parsed.data.name },
-  });
+  const supabase = getSupabaseServer();
+  const { error } = await supabase
+    .from("profiles")
+    .update({ name: parsed.data.name })
+    .eq("id", user.id);
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
   return NextResponse.json({ ok: true });
 }

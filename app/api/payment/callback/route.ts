@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { verifyCallback } from "@/lib/knet";
 import { cancelBooking, markBookingPaid } from "@/lib/bookings";
-import { prisma } from "@/lib/db";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
 
 // GET (mock K-Net redirects via <a href>); POST exists too in case a real
 // gateway uses form-post callback.
@@ -10,7 +10,6 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
-  // Real K-Net usually posts URL-encoded form bodies.
   const ctype = req.headers.get("content-type") ?? "";
   let params: URLSearchParams;
   if (ctype.includes("application/x-www-form-urlencoded")) {
@@ -34,8 +33,14 @@ async function handle(params: URLSearchParams) {
     return NextResponse.json({ error: "Invalid callback signature." }, { status: 400 });
   }
 
-  const booking = await prisma.booking.findUnique({ where: { id: verified.bookingId } });
-  if (!booking) {
+  // Service role: callback arrives unauthenticated, so RLS would block reads.
+  const admin = getSupabaseAdmin();
+  const { data: booking, error } = await admin
+    .from("bookings")
+    .select("id, status")
+    .eq("id", verified.bookingId)
+    .maybeSingle();
+  if (error || !booking) {
     return NextResponse.json({ error: "Booking not found." }, { status: 404 });
   }
 

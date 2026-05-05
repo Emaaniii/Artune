@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/db";
-import { setSessionUser } from "@/lib/auth";
+import { getSupabaseAdmin } from "@/lib/supabase/admin";
+import { mintSessionForUser } from "@/lib/auth";
 import { LoginInput } from "@/lib/validators";
 
 export async function POST(req: Request) {
@@ -21,15 +21,21 @@ export async function POST(req: Request) {
   }
 
   const { username, password } = parsed.data;
-  const user = await prisma.user.findUnique({ where: { username } });
-  if (!user || !user.passwordHash) {
+  const admin = getSupabaseAdmin();
+  const { data: profile, error } = await admin
+    .from("profiles")
+    .select("id, password_hash")
+    .eq("username", username)
+    .maybeSingle();
+
+  if (error || !profile || !profile.password_hash) {
     return NextResponse.json(
       { error: "Invalid username or password." },
       { status: 401 },
     );
   }
 
-  const ok = await bcrypt.compare(password, user.passwordHash);
+  const ok = await bcrypt.compare(password, profile.password_hash);
   if (!ok) {
     return NextResponse.json(
       { error: "Invalid username or password." },
@@ -37,6 +43,14 @@ export async function POST(req: Request) {
     );
   }
 
-  await setSessionUser(user.id, user.phone);
+  try {
+    await mintSessionForUser(profile.id);
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Sign-in failed" },
+      { status: 500 },
+    );
+  }
+
   return NextResponse.json({ ok: true });
 }
