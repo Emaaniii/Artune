@@ -170,7 +170,7 @@ export default function SlotPicker({ slotsByDate, priceFils }: Props) {
                         />
                         <span className={sold ? "text-error" : "text-emerald-400"}>
                           {sold
-                            ? "Sold out"
+                            ? "Fully Booked"
                             : `${s.seatsLeft} of ${s.maxSeats} seats available`}
                         </span>
                       </div>
