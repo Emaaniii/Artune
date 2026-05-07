@@ -1,7 +1,13 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Be_Vietnam_Pro } from "next/font/google";
+import dynamic from "next/dynamic";
 import "./globals.css";
 import StarField from "@/components/StarField";
+
+// Client-only — never participates in SSR, so it cannot perturb the rendered
+// HTML of any page. If the chatbot ever throws, only its own bubble breaks;
+// every other component renders normally on the server.
+const ChatBot = dynamic(() => import("@/components/ChatBot"), { ssr: false });
 
 const display = Space_Grotesk({
   subsets: ["latin"],
@@ -29,6 +35,7 @@ export default function RootLayout({
       <body className="font-body-md text-on-background min-h-screen relative">
         <StarField />
         {children}
+        <ChatBot />
       </body>
     </html>
   );
