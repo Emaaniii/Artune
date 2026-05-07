@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Space_Grotesk, Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import StarField from "@/components/StarField";
-import ChatBot from "@/components/ChatBot";
 
 const display = Space_Grotesk({
   subsets: ["latin"],
@@ -30,7 +29,6 @@ export default function RootLayout({
       <body className="font-body-md text-on-background min-h-screen relative">
         <StarField />
         {children}
-        <ChatBot />
       </body>
     </html>
   );
