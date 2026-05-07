@@ -25,6 +25,9 @@ export async function GET() {
     TWILIO_ACCOUNT_SID_present: Boolean(process.env.TWILIO_ACCOUNT_SID),
     TWILIO_AUTH_TOKEN_present: Boolean(process.env.TWILIO_AUTH_TOKEN),
     TWILIO_WHATSAPP_FROM: process.env.TWILIO_WHATSAPP_FROM ?? null,
+    OPENROUTER_API_KEY_present: Boolean(process.env.OPENROUTER_API_KEY),
+    OPENROUTER_MODEL:
+      process.env.OPENROUTER_MODEL ?? "(default: meta-llama/llama-3.3-70b-instruct:free)",
   };
 
   const missing = Object.entries({
