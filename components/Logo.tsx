@@ -7,18 +7,58 @@ interface Props {
   className?: string;
 }
 
-/** Tiny 4-point sparkle star that traces an elliptical orbit. */
+type OrbitProps = {
+  rx: string;
+  ry: string;
+  duration?: string;
+  size?: number;
+};
+
+// How many trail "ghosts" follow the leader, and how far apart in time each
+// one sits on the orbit path. 8 ghosts × 0.16s = 1.28s of trail = ~15% of a
+// 9s orbit — enough to read as a comet tail without overwhelming the wordmark.
+const TRAIL_COUNT = 8;
+const TRAIL_SPACING_S = 0.16;
+
+/**
+ * Comet-style orbiter: one bright shining leader, plus a tail of fading
+ * ghost stars on the same elliptical path. The ghosts are placed by giving
+ * each a negative animation-delay so it sits at the position the leader was
+ * (i × spacing) seconds in the past.
+ */
 export function OrbitingStar({
   rx,
   ry,
   duration = "7s",
   size = 14,
-}: {
-  rx: string;
-  ry: string;
-  duration?: string;
-  size?: number;
-}) {
+}: OrbitProps) {
+  return (
+    <>
+      {/* Trail ghosts — rendered first so the leader paints on top. */}
+      {Array.from({ length: TRAIL_COUNT }).map((_, i) => {
+        const t = (i + 1) / TRAIL_COUNT; // 0 → 1, head-of-tail to tail-of-tail
+        const ghostSize = Math.max(2, size * (1 - t * 0.7));
+        const ghostOpacity = Math.max(0.05, 0.65 - t * 0.6);
+        const delaySeconds = -(i + 1) * TRAIL_SPACING_S;
+        return (
+          <OrbitTrailDot
+            key={i}
+            rx={rx}
+            ry={ry}
+            duration={duration}
+            size={ghostSize}
+            opacity={ghostOpacity}
+            delay={`${delaySeconds}s`}
+          />
+        );
+      })}
+      <OrbitLeader rx={rx} ry={ry} duration={duration} size={size} />
+    </>
+  );
+}
+
+/** The bright shining leader — has halos, rays, and the full sparkle SVG. */
+function OrbitLeader({ rx, ry, duration = "7s", size = 14 }: OrbitProps) {
   const half = size / 2;
   return (
     <span
@@ -47,6 +87,53 @@ export function OrbitingStar({
         width={size}
         height={size}
         className="orbit-star-svg"
+      >
+        <path
+          d="M 12 1 L 13.6 9.4 L 22 12 L 13.6 14.6 L 12 23 L 10.4 14.6 L 2 12 L 10.4 9.4 Z"
+          fill="#ffffff"
+        />
+      </svg>
+    </span>
+  );
+}
+
+/**
+ * One ghost particle on the trail. Same orbit path as the leader; lighter
+ * styling (no halos, no rays, no twinkle), and a negative animation-delay
+ * so it sits behind the leader on the path.
+ */
+function OrbitTrailDot({
+  rx,
+  ry,
+  duration,
+  size,
+  opacity,
+  delay,
+}: OrbitProps & { opacity: number; delay: string }) {
+  const half = (size ?? 14) / 2;
+  return (
+    <span
+      aria-hidden="true"
+      className="orbit-star pointer-events-none absolute top-1/2 left-1/2"
+      style={
+        {
+          "--orbit-rx": rx,
+          "--orbit-ry": ry,
+          "--orbit-duration": duration,
+          marginTop: `-${half}px`,
+          marginLeft: `-${half}px`,
+          width: `${size}px`,
+          height: `${size}px`,
+          animationDelay: delay,
+          opacity,
+        } as CSSProperties
+      }
+    >
+      <svg
+        viewBox="0 0 24 24"
+        width={size}
+        height={size}
+        className="orbit-trail-svg"
       >
         <path
           d="M 12 1 L 13.6 9.4 L 22 12 L 13.6 14.6 L 12 23 L 10.4 14.6 L 2 12 L 10.4 9.4 Z"
