@@ -15,6 +15,40 @@ body {
     radial-gradient(circle at 80% 70%, rgba(49, 46, 129, 0.22) 0%, transparent 55%),
     radial-gradient(circle at 50% 100%, rgba(109, 59, 215, 0.12) 0%, transparent 60%);
   background-attachment: fixed;
+  /* Custom oil-paint-brush cursor. Hot-spot at (3,3) — the bristle tip. */
+  cursor: url("/cursors/brush.svg") 3 3, auto;
+}
+
+/* Restore a sensible cursor for text input — typing inside an oil brush is
+   confusing. Buttons / links inherit the brush, which matches the request. */
+input,
+textarea,
+[contenteditable="true"] {
+  cursor: text;
+}
+
+/* ---------- Trailing sparkle particles spawned by CursorSparkles ---------- */
+@keyframes cursor-sparkle {
+  0% {
+    transform: translate(-50%, -50%) scale(0) rotate(0deg);
+    opacity: 0;
+    filter: drop-shadow(0 0 0 currentColor);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.15) rotate(60deg);
+    filter: drop-shadow(0 0 6px currentColor);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.25) rotate(200deg);
+    filter: drop-shadow(0 0 0 currentColor);
+  }
+}
+.cursor-sparkle {
+  display: inline-block;
+  will-change: transform, opacity, filter;
+  animation: cursor-sparkle 800ms ease-out forwards;
 }
 
 @layer components {

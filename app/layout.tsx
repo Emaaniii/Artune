@@ -5,9 +5,13 @@ import "./globals.css";
 import StarField from "@/components/StarField";
 
 // Client-only — never participates in SSR, so it cannot perturb the rendered
-// HTML of any page. If the chatbot ever throws, only its own bubble breaks;
-// every other component renders normally on the server.
+// HTML of any page. If either of these ever throws, only its own subtree
+// breaks; every other component renders normally on the server.
 const ChatBot = dynamic(() => import("@/components/ChatBot"), { ssr: false });
+const CursorSparkles = dynamic(
+  () => import("@/components/CursorSparkles"),
+  { ssr: false },
+);
 
 const display = Space_Grotesk({
   subsets: ["latin"],
@@ -36,6 +40,7 @@ export default function RootLayout({
         <StarField />
         {children}
         <ChatBot />
+        <CursorSparkles />
       </body>
     </html>
   );
