@@ -36,11 +36,17 @@ export function OrbitingStar({
         } as CSSProperties
       }
     >
+      {/* Two rippling halos offset in phase — produce a continuous wave of
+          light radiating outward from the star. */}
+      <span className="orbit-halo orbit-halo-a" />
+      <span className="orbit-halo orbit-halo-b" />
+      {/* Four short shine rays in a cross pattern, animating outward. */}
+      <span className="orbit-rays" />
       <svg
         viewBox="0 0 24 24"
         width={size}
         height={size}
-        className="drop-shadow-[0_0_8px_rgba(255,255,255,0.95)]"
+        className="orbit-star-svg"
       >
         <path
           d="M 12 1 L 13.6 9.4 L 22 12 L 13.6 14.6 L 12 23 L 10.4 14.6 L 2 12 L 10.4 9.4 Z"
