@@ -32,6 +32,12 @@ export function OrbitingStar({
   duration = "7s",
   size = 14,
 }: OrbitProps) {
+  // Parse "9s" → 9. Used to put ghosts BEHIND the leader on the orbit:
+  // an `animation-delay: positive` would freeze each ghost at the start
+  // keyframe for the first `delay` seconds, so we subtract a full duration
+  // to get the same phase via a large-negative delay that starts smoothly.
+  const durationSeconds = parseFloat(duration) || 7;
+
   return (
     <>
       {/* Trail ghosts — rendered first so the leader paints on top. */}
@@ -39,7 +45,10 @@ export function OrbitingStar({
         const t = (i + 1) / TRAIL_COUNT; // 0 → 1, head-of-tail to tail-of-tail
         const ghostSize = Math.max(2, size * (1 - t * 0.7));
         const ghostOpacity = Math.max(0.05, 0.65 - t * 0.6);
-        const delaySeconds = -(i + 1) * TRAIL_SPACING_S;
+        // Positive phase offset = ghost lags `behind` the leader on the path
+        // (its current position is the leader's position from `behind` seconds ago).
+        const behind = (i + 1) * TRAIL_SPACING_S;
+        const delaySeconds = behind - durationSeconds;
         return (
           <OrbitTrailDot
             key={i}
