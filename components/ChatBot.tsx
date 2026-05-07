@@ -7,46 +7,43 @@ type Msg = { role: "user" | "assistant"; content: string };
 const GREETING: Msg = {
   role: "assistant",
   content:
-    "Hi ✦ I'm Artune's helper. Ask about classes, timings, prices, or how to book.",
+    "Hi ✦ I'm Artune's helper. Tap any question below — I'll answer right away.",
 };
 
 /**
- * Floating chat launcher + panel. Loaded via dynamic(ssr:false) from the root
- * layout so this component never participates in SSR — guaranteeing it can't
- * change the server-rendered HTML of any page.
- *
- * Styling stays inside Tailwind's known utility set + already-defined custom
- * colors; no arbitrary CSS values that the JIT might not pick up.
+ * Curated list of questions the user can ask. The chatbot is intentionally
+ * menu-driven: no free-form input, just clickable chips. Keeps answers
+ * focused on the topics the system prompt is grounded in.
  */
+const QUICK_PROMPTS: string[] = [
+  "What classes do you offer?",
+  "How much does it cost?",
+  "What days and times are classes?",
+  "How do I book a class?",
+  "How many seats per class?",
+  "How do I cancel a booking?",
+  "How do I sign up?",
+  "Where can I edit my profile?",
+];
+
 export default function ChatBot() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Msg[]>([GREETING]);
-  const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
+  // Autoscroll the messages area on new content / loading state changes.
   useEffect(() => {
     if (listRef.current) {
       listRef.current.scrollTop = listRef.current.scrollHeight;
     }
   }, [messages, loading]);
 
-  useEffect(() => {
-    if (open) {
-      const t = setTimeout(() => inputRef.current?.focus(), 50);
-      return () => clearTimeout(t);
-    }
-  }, [open]);
-
-  async function send() {
-    const text = input.trim();
-    if (!text || loading) return;
-
+  async function ask(text: string) {
+    if (loading) return;
     const next: Msg[] = [...messages, { role: "user", content: text }];
     setMessages(next);
-    setInput("");
     setErr(null);
     setLoading(true);
 
@@ -71,6 +68,11 @@ export default function ChatBot() {
     }
   }
 
+  function reset() {
+    setMessages([GREETING]);
+    setErr(null);
+  }
+
   return (
     <>
       {/* Floating launcher — bottom-right */}
@@ -89,7 +91,7 @@ export default function ChatBot() {
           role="dialog"
           aria-label="Artune helper"
           className="fixed bottom-40 right-4 z-40 flex w-80 max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-white/15 bg-indigo-950/85 backdrop-blur-xl md:bottom-24 md:right-6"
-          style={{ height: "26rem" }}
+          style={{ height: "30rem" }}
         >
           <header className="flex items-center justify-between border-b border-white/10 px-4 py-3">
             <div>
@@ -97,17 +99,30 @@ export default function ChatBot() {
                 Artune helper
               </p>
               <p className="text-[10px] uppercase tracking-widest text-on-surface-variant">
-                Ask anything ✦
+                Tap a question ✦
               </p>
             </div>
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label="Close"
-              className="rounded-md px-2 py-1 text-xl leading-none text-on-surface-variant transition-colors hover:bg-white/10 hover:text-white"
-            >
-              ×
-            </button>
+            <div className="flex items-center gap-1">
+              {messages.length > 1 && (
+                <button
+                  type="button"
+                  onClick={reset}
+                  aria-label="Start over"
+                  title="Start over"
+                  className="rounded-md px-2 py-1 text-xs leading-none text-on-surface-variant transition-colors hover:bg-white/10 hover:text-white"
+                >
+                  Reset
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="Close"
+                className="rounded-md px-2 py-1 text-xl leading-none text-on-surface-variant transition-colors hover:bg-white/10 hover:text-white"
+              >
+                ×
+              </button>
+            </div>
           </header>
 
           <div ref={listRef} className="flex-1 space-y-3 overflow-y-auto p-4">
@@ -117,7 +132,7 @@ export default function ChatBot() {
                 className={
                   m.role === "user"
                     ? "ml-auto max-w-[85%] rounded-xl bg-violet-500/30 px-3 py-2 text-sm text-white"
-                    : "max-w-[85%] whitespace-pre-wrap rounded-xl border border-white/5 bg-white/5 px-3 py-2 text-sm text-on-surface"
+                    : "max-w-[90%] whitespace-pre-wrap rounded-xl border border-white/5 bg-white/5 px-3 py-2 text-sm text-on-surface"
                 }
               >
                 {m.content}
@@ -135,30 +150,25 @@ export default function ChatBot() {
             )}
           </div>
 
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              send();
-            }}
-            className="flex gap-2 border-t border-white/10 p-3"
-          >
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              placeholder="Type a message…"
-              maxLength={500}
-              disabled={loading}
-              className="flex-1 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white placeholder:text-on-surface-variant focus:border-violet-400/60 focus:outline-none"
-            />
-            <button
-              type="submit"
-              disabled={loading || !input.trim()}
-              className="rounded-lg bg-violet-600 px-4 py-2 text-sm font-display font-semibold text-white transition-colors hover:bg-violet-500 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Send
-            </button>
-          </form>
+          {/* Question chips — replaces the text input */}
+          <div className="border-t border-white/10 px-3 py-3">
+            <p className="mb-2 text-[10px] uppercase tracking-widest text-on-surface-variant">
+              Pick a question
+            </p>
+            <div className="flex max-h-32 flex-wrap gap-1.5 overflow-y-auto">
+              {QUICK_PROMPTS.map((q) => (
+                <button
+                  key={q}
+                  type="button"
+                  disabled={loading}
+                  onClick={() => ask(q)}
+                  className="rounded-full border border-violet-400/30 bg-violet-500/10 px-3 py-1.5 text-xs text-violet-100 transition-colors hover:bg-violet-500/25 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  {q}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </>
