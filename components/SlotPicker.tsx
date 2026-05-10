@@ -211,7 +211,7 @@ export default function SlotPicker({ slotsByDate, priceFils }: Props) {
           {loading ? "Reserving…" : "Proceed to payment"}
         </Button>
         <p className="text-[10px] text-center text-on-surface-variant uppercase tracking-widest">
-          Secure transaction via K-Net
+          Secure transaction via MyFatoorah
         </p>
       </div>
     </div>

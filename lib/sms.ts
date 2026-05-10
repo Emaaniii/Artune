@@ -25,6 +25,7 @@ export class SendSmsError extends Error {
     message: string,
     public readonly code:
       | "OUTSIDE_WHATSAPP_WINDOW"
+      | "SANDBOX_NOT_JOINED"
       | "DELIVERY_FAILED"
       | "TWILIO_API"
       | "MISCONFIGURED",
@@ -136,6 +137,12 @@ async function sendViaTwilio({ to, body, channel }: TwilioArgs): Promise<void> {
             throw new SendSmsError(
               "WhatsApp blocked the message because the user is outside the 24-hour reply window. Ask them to send any message to the sandbox number first.",
               "OUTSIDE_WHATSAPP_WINDOW",
+            );
+          }
+          if (status.error_code === 63015 || status.error_code === 63007) {
+            throw new SendSmsError(
+              "WhatsApp could not deliver — the recipient is not in the Twilio Sandbox. Sandbox membership expires every 72 hours. From the recipient's WhatsApp, send the join phrase (Twilio Console → Messaging → Try it out → Send a WhatsApp message) to +14155238886, then retry.",
+              "SANDBOX_NOT_JOINED",
             );
           }
           throw new SendSmsError(

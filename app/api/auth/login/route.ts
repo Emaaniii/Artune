@@ -20,17 +20,20 @@ export async function POST(req: Request) {
     );
   }
 
-  const { username, password } = parsed.data;
+  const { identifier, password } = parsed.data;
   const admin = getSupabaseAdmin();
+
+  // "@" → email lookup (citext column = case-insensitive); otherwise username.
+  const isEmail = identifier.includes("@");
   const { data: profile, error } = await admin
     .from("profiles")
     .select("id, password_hash")
-    .eq("username", username)
+    .eq(isEmail ? "email" : "username", identifier)
     .maybeSingle();
 
   if (error || !profile || !profile.password_hash) {
     return NextResponse.json(
-      { error: "Invalid username or password." },
+      { error: "Invalid credentials." },
       { status: 401 },
     );
   }
@@ -38,7 +41,7 @@ export async function POST(req: Request) {
   const ok = await bcrypt.compare(password, profile.password_hash);
   if (!ok) {
     return NextResponse.json(
-      { error: "Invalid username or password." },
+      { error: "Invalid credentials." },
       { status: 401 },
     );
   }

@@ -39,7 +39,7 @@ export default async function LandingPage() {
               <div>
                 <h2 className="font-display text-h2 text-white">Join the galaxy</h2>
                 <p className="text-body-md text-on-surface-variant">
-                  Sign up with a Kuwait mobile number, or log in with username & password.
+                  Sign up with email & password, or use a Kuwait mobile number for OTP.
                 </p>
               </div>
               <AuthTabs />

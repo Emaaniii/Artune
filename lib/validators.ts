@@ -15,8 +15,20 @@ export const VerifyOtpInput = z.object({
   code: z.string().regex(/^\d{6}$/, "Enter the 6-digit code"),
 });
 
+export const EmailSignupInput = z.object({
+  name: z.string().trim().min(1, "Name is required").max(60),
+  email: z.string().trim().toLowerCase().email("Enter a valid email").max(254),
+  password: z
+    .string()
+    .min(8, "Password must be at least 8 characters")
+    .max(200),
+});
+
 export const LoginInput = z.object({
-  username: z.string().trim().min(3).max(40),
+  // Accept either a username (3–40 chars, alnum + underscore) or an email.
+  // The login route picks the right column to look up based on whether the
+  // value contains "@".
+  identifier: z.string().trim().min(3).max(254),
   password: z.string().min(6).max(200),
 });
 

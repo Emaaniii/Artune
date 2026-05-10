@@ -58,7 +58,7 @@ export default async function ClassDetailPage({
                 Creativity can be wild. Dress comfortably — it might get messy with paints, clay or pigments.
               </Essential>
               <Essential title="20 KWD per student">
-                Pay securely via K-Net at checkout.
+                Pay securely via MyFatoorah at checkout.
               </Essential>
             </div>
           </div>
